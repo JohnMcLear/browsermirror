@@ -1,3 +1,4 @@
+// EXAMPLE IO_BASE = "/home/mirror/node_modules/socket.io/node_modules/socket.io-client/dist/";
 if (process.argv[2] == '-h') {
   console.log('Usage:');
   console.log('  node server.js [PORT [HOSTNAME]]');
@@ -13,7 +14,6 @@ if (! IO_BASE) {
   console.error('You must set $IO_BASE to the path of Socket.IO-node');
   process.exit(2);
 }
-var io = require(IO_BASE);
 
 var SERVER_ADDRESS = null;
 
@@ -26,7 +26,7 @@ var server = http.createServer(function(req, res){
     sendPage(req, res, 'data/view.html', {_CHANNEL_: channelName});
   } else if (path == '/mirror.js') {
     fs.readFile(__dirname + '/lib/mirror.js', 'utf8', function (err, data) {
-      fs.readFile(IO_BASE + '/support/socket.io-client/socket.io.js', 'utf8', function (err, data2) {
+      fs.readFile(IO_BASE + 'socket.io.js', 'utf8', function (err, data2) {
         res.writeHead(200, {'Content-Type': 'text/javascript'});
         var header = "WEB_SOCKET_SWF_LOCATION = '" + SERVER_ADDRESS + "/WebSocketMainInsecure.swf';\n";
         res.end(header + data + data2 + extra_js);
@@ -68,15 +68,16 @@ function sendPage(req, res, filename, vars) {
   });
 }
 
-io = io.listen(server);
+// io = io.listen(server);
+var io = require('socket.io').listen(server)
 
 var channels = {};
-var channelsBySessionId = {};
+var channelsByid = {};
 
 io.on('connection', function (client) {
-  console.log('got new client', client.sessionId);
-  if (client.sessionId in channelsBySessionId) {
-    client.channel = channelsBySessionId[client.sessionId];
+  console.log('got new client', client.id);
+  if (client.id in channelsByid) {
+    client.channel = channelsByid[client.id];
   }
 
   client.on('message', function (msg) {
@@ -85,35 +86,35 @@ io.on('connection', function (client) {
       msg = JSON.parse(msg);
     }
     var displayMsg = JSON.stringify(msg).substr(0, 70);
-    console.info('received message', client.sessionId, displayMsg);
+    console.info('received message', client.id, displayMsg);
     if (msg.subscribe && ! client.channel) {
       // FIXME: check if already subscribed
       client.channel = msg.subscribe;
-      channelsBySessionId[client.sessionId] = client.channel;
+      channelsByid[client.id] = client.channel;
       if (! (client.channel in channels)) {
         channels[client.channel] = [];
       }
-      console.info('subscribing', client.sessionId, msg.subscribe, channels[msg.subscribe].length);
+      console.info('subscribing', client.id, msg.subscribe, channels[msg.subscribe].length);
       channels[client.channel].push(client);
     }
     if (! client.channel) {
       console.warn('client has no channel', displayMsg);
       return;
     }
-    msg.sessionId = client.sessionId;
+    msg.id = client.id;
     var channelName = client.channel;
     console.log('message on channel', channelName, channels[channelName].length);
     var clientList = channels[channelName];
     for (var i=0; i<clientList.length; i++) {
       if (clientList[i] !== client) {
-        console.info('Sending to socket', clientList[i].sessionId);
-        clientList[i].send(JSON.stringify(msg));
+        console.info('Sending to socket', clientList[i].id);
+        clientList[i].json.send(JSON.stringify(msg));
       }
     }
   });
 
   client.on('disconnect', function () {
-    console.info('saying goodbye', client.sessionId);
+    console.info('saying goodbye', client.id);
     var channelName = client.channel;
     var channelList = channels[channelName];
     if (! channelList) {
