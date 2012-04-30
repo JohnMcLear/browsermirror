@@ -1,21 +1,11 @@
-// EXAMPLE IO_BASE = "/home/mirror/node_modules/socket.io/node_modules/socket.io-client/dist/";
-if (process.argv[2] == '-h') {
-  console.log('Usage:');
-  console.log('  node server.js [PORT [HOSTNAME]]');
-  console.log('Set $IO_BASE to the path of Socket.IO-node (version 0.6.18)');
-  process.exit();
-}
-
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
-IO_BASE = process.env.IO_BASE;
-if (! IO_BASE) {
-  console.error('You must set $IO_BASE to the path of Socket.IO-node');
-  process.exit(2);
-}
 
 var SERVER_ADDRESS = null;
+
+console.log(__dirname + '/node_modules/socket.io/node_modules/socket.io-client/dist/socket.io.js');
+
 
 var server = http.createServer(function(req, res){
   var path = url.parse(req.url).pathname || '/';
@@ -26,7 +16,7 @@ var server = http.createServer(function(req, res){
     sendPage(req, res, 'data/view.html', {_CHANNEL_: channelName});
   } else if (path == '/mirror.js') {
     fs.readFile(__dirname + '/lib/mirror.js', 'utf8', function (err, data) {
-      fs.readFile(IO_BASE + 'socket.io.js', 'utf8', function (err, data2) {
+      fs.readFile(__dirname + '/node_modules/socket.io/node_modules/socket.io-client/dist/socket.io.js', 'utf8', function (err, data2) {
         res.writeHead(200, {'Content-Type': 'text/javascript'});
         var header = "WEB_SOCKET_SWF_LOCATION = '" + SERVER_ADDRESS + "/WebSocketMainInsecure.swf';\n";
         res.end(header + data + data2 + extra_js);
@@ -144,7 +134,7 @@ function generateToken() {
 }
 
 var port = 8080;
-var hostname = 'localhost';
+var hostname = '10.0.0.55';
 
 if (process.argv[2]) {
   port = parseInt(process.argv[2]);
