@@ -6,7 +6,7 @@ The goal is primarily to explore the feasibility of a particular technique; it i
 
 ## Implementation
 
-This is not cooperative sharing, as in the case of Etherpad or Google Wave, but rather a master/client relationship.  The master browser is the active browser, and runs all the Javascript.  The mirror receives all the HTML (i.e., DOM elements) but no Javascript.  Anything that *happens* happens on the master browser and is relayed to the mirror.
+This is not cooperative sharing, as in the case of [Etherpad](http://etherpad.org) or Google Wave, but rather a master/client relationship.  The master browser is the active browser, and runs all the Javascript.  The mirror receives all the HTML (i.e., DOM elements) but no Javascript.  Anything that *happens* happens on the master browser and is relayed to the mirror.
 
 The mirror in turn will capture events and relay them back to the master.  (This is where feasibility becomes questionable.)  So if for instance the mirror (client) user clicks on something, the specific element and the click event goes back to the master, where it is presented as though the master user clicked on the element.  If this in turn has visible side-effects, these are then transmitted back to the mirror.
 
