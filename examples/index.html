@@ -7,11 +7,20 @@ var master = new Master('/share/foo');
 window.addEventListener('load', function () {
   master.poll(5000);
 }, false);
-document.addEventListener('click', function (ev) {
-  window.gev = ev;
-  console.log('set background on', ev.target);
-  ev.target.style.backgroundColor = '#fdd';
-}, false);
+if(document.addEventlistener){
+  document.addEventListener('click', function (ev) {
+    window.gev = ev;
+    console.log('set background on', ev.target);
+    ev.target.style.backgroundColor = '#fdd';
+  }, false);
+}
+else{
+  document.attachEvent('onclick', function (ev) {
+    window.gev = ev;
+    console.log('set background on', ev.target);
+    ev.target.style.backgroundColor = '#fdd';
+  }, false);
+}
 </script>
 </head>
 <body>
